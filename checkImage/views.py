@@ -32,20 +32,27 @@ def check_list(request, format=None):
         if serializer.is_valid():
             serializer.save()
             ## 폴더 생성
+            sid = request.data.get('title')
 
             ## 체크
             mtcnn = MTCNN(image_size=240, margin=0, min_face_size=20)  # initializing mtcnn for face detection
             resnet = InceptionResnetV1(pretrained='vggface2').eval()  # initializing resnet for face img to embeding conversion
+            
+            start = time.time()
 
-            path = "media/check/b123456"
+            print("checkpoint 0")
+           
+            path = "media/check/"+sid
             file_list = os.listdir(path)
-            img = Image.open("media/check/b123456/" + file_list[0])
-            time.sleep(3)
-            print("sleep1")
-            #img = img.transpose(Image.ROTATE_270)
-            img_cropped = mtcnn(img, save_path="media/croppedCheck/b123456/"+"cropped_b123456"+".jpg")
-            time.sleep(3)
-            print("sleep2")
+            img = Image.open(path + "/" + file_list[0])
+                
+            print("checkpoint 1:", time.time() - start)
+            img_cropped = mtcnn(img, save_path="media/croppedCheck/"+sid+"/cropped_"+sid+".jpg") 
+            print("checkpoint 2:", time.time() - start)
+            
+            
+            
+           
 
             def face_match(img_path, data_path):  # img_path= location of photo, data_path= location of data.pt
                 # getting embedding matrix of the given img
@@ -70,17 +77,25 @@ def check_list(request, format=None):
                 idx_min = dist_list.index(min(dist_list))
                 return (name_list[idx_min], min(dist_list))
 
-            result = face_match('media/croppedCheck/b123456/cropped_b123456.jpg', 'golo.pt')
+            print("checkpoint 3:", time.time() - start)
+            result = face_match("media/croppedCheck/"+sid+"/cropped_"+sid+".jpg", 'golo.pt')
+            print("checkpoint 4:", time.time() - start)
+
             print(result)
+
+            checked = False
+            if sid == result[0]:
+                checked = True
+                
             dummy_data = {
                 "title": "student check",
                 "description": "dd",
                 "check_list": [
-                    { "id": result[0], "studentId": "b123456", "check": result[1] },
-                    { "id": "test id", "studentId": "test student id", "check": "test check" },
+                    { "id": sid, "check": checked },
                 ]
             }
             # 삭제
+            print("checkpoint 5:", time.time() - start)
 
             return JsonResponse(dummy_data, status=status.HTTP_201_CREATED)
             #return Response(serializer.data, status=status.HTTP_201_CREATED)
