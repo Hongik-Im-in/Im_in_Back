@@ -12,14 +12,6 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ['title', 'image']
         #fields = ['title']
 
-#    def get_base64_image(self, obj):
-#        f = open(obj.image_file.path, 'rb')
-#        image = File(f)
-#        data = base64.b64encode(image.read())
-#        f.close()
-#        return data
-
-
     def create(self, validated_data):
         """
         Create and return a new `Snippet` instance, given the validated data.
