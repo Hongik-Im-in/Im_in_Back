@@ -7,7 +7,7 @@ from getImage.models import Image
 from getImage.serializers import ImageSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
-
+import os
 
 @api_view(['GET', 'PUT','POST'])
 @permission_classes((permissions.AllowAny,))
@@ -96,6 +96,12 @@ def image_list(request, format=None):
             }
             # 삭제
             print("checkpoint 5:", time.time() - start)
+            # 특정 폴더내의 사진 삭제하기.
+            dir_name = 'media/croppedCheck'
+            list_dir = os.listdir(dir_name)
+            for item in list_dir:
+                if item.endswith(".jpg") or item.endswith(".png"):
+                    os.remove(os.path.join(dir_name, item))
 
             return JsonResponse(dummy_data, status=status.HTTP_201_CREATED)
             #return Response(serializer.data, status=status.HTTP_201_CREATED)
