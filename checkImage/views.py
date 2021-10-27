@@ -7,7 +7,6 @@ from checkImage.models import checkImage
 from checkImage.serializers import CheckSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
-
 from django.http import JsonResponse
 from facenet_pytorch import MTCNN, InceptionResnetV1
 import torch
@@ -49,9 +48,6 @@ def check_list(request, format=None):
             print("checkpoint 1:", time.time() - start)
             img_cropped = mtcnn(img, save_path="media/croppedCheck/"+sid+"/cropped_"+sid+".jpg") 
             print("checkpoint 2:", time.time() - start)
-            
-            
-            
            
 
             def face_match(img_path, data_path):  # img_path= location of photo, data_path= location of data.pt

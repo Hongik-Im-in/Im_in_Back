@@ -1,34 +1,52 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-#from snippets.models import Snippet
-#from snippets.serializers import SnippetSerializer
-from getImage.models import Image
+from getImage.models import Images
 from getImage.serializers import ImageSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
-import os
+from facenet_pytorch import MTCNN, InceptionResnetV1
+import os, time
+from getImage.models import Check
+from getImage.serializers import CheckSerializer
+from django.http import JsonResponse
+import torch
+from torchvision import datasets
+from torch.utils.data import DataLoader
+from PIL import Image
+import torchvision
 
-@api_view(['GET', 'PUT','POST'])
+
+@api_view(['GET','POST'])
 @permission_classes((permissions.AllowAny,))
 def image_list(request, format=None):
     """
     List all code snippets, or create a new snippet.
     """
     if request.method == 'GET':
-        images = Image.objects.all()
+        images = Images.objects.all()
         serializer = ImageSerializer(images, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
+    elif request.method == 'POST':
         serializer = ImageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.AllowAny,))
+def check_list(request, format=None):
+    if request.method == 'GET':
+        images = Check.objects.all()
+        serializer = CheckSerializer(images, many=True)
+        return Response(serializer.data)
+
     elif request.method == 'POST':
-        serializer = ImageSerializer(data=request.data)
+        serializer = CheckSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             ## 폴더 생성
@@ -51,8 +69,6 @@ def image_list(request, format=None):
             print("checkpoint 2:", time.time() - start)
             
             
-            
-           
 
             def face_match(img_path, data_path):  # img_path= location of photo, data_path= location of data.pt
                 # getting embedding matrix of the given img
@@ -96,18 +112,7 @@ def image_list(request, format=None):
             }
             # 삭제
             print("checkpoint 5:", time.time() - start)
-            # 특정 폴더내의 사진 삭제하기.
-            dir_name = 'media/croppedCheck'
-            list_dir = os.listdir(dir_name)
-            for item in list_dir:
-                if item.endswith(".jpg") or item.endswith(".png"):
-                    os.remove(os.path.join(dir_name, item))
 
             return JsonResponse(dummy_data, status=status.HTTP_201_CREATED)
             #return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'PUT','POST'])
-@permission_classes((permissions.AllowAny,))
-def attendance_list(request, format=None):
-    
