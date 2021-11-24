@@ -32,12 +32,16 @@ def image_list(request, format=None):
         serializer = ImageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            dummy_data = {
+                "status" : status.HTTP_201_CREATED
+            }
+            return Response(dummy_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-@api_view(['GET', 'POST'])
+
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes((permissions.AllowAny,))
 def check_list(request, format=None):
     if request.method == 'GET':
@@ -108,7 +112,8 @@ def check_list(request, format=None):
                 "description": "dd",
                 "check_list": [
                     { "id": sid, "check": checked },
-                ]
+                ],
+                "status" : "OK"
             }
             # 삭제
             print("checkpoint 5:", time.time() - start)
@@ -116,3 +121,27 @@ def check_list(request, format=None):
             return JsonResponse(dummy_data, status=status.HTTP_201_CREATED)
             #return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        serializer = CheckSerializer(data=request.data)
+        if serializer.is_valid():
+            
+            ## 폴더 생성
+            sid = request.data.get('title')
+            
+            path1 = "media/check/"+sid+'/'+ sid + '.jpg'
+            path2 = "media/croppedCheck/"+sid+'/cropped_'+ sid + '.jpg'
+
+            os.remove(path1)
+            os.remove(path2)
+            deleted_data = {
+                "title": sid,
+                "description": "deleted " + sid,
+                "status" : "OK"
+            }
+
+            return JsonResponse(deleted_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
